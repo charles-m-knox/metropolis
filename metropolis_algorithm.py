@@ -141,13 +141,13 @@ def get_complete_plot(temp, num_particles, num_trials, energy_max):
         count_collection.append(0)
     for particle in particle_collection:
         try:
-            count_collection[int(particle['E']) - 1] += 1 
+            count_collection[int(particle['E'])-1] += 1 
         except Exception as e:
             log("Failed to count energy of " + str(particle['E']) 
                 + ": " + str(e))
     count_collection.sort()
     count_collection.reverse()
-    return range(0, highest_energy), count_collection, 
+    return range(0, highest_energy), count_collection
 
 def main(args_dict):
     fig = plt.figure(figsize=(8.5,11))
