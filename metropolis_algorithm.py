@@ -20,12 +20,13 @@ import collections
 import numpy as np
 import math
 import random
+from scipy.optimize import curve_fit
 
 def log(message):
     print message
 
-def get_complete_plot(temp, num_particles, num_trials, energy_max):
-    beta = (1/temp) #Thermodynamic Beta = 1/kT
+def gen_particle_dist(temp, num_particles, num_trials, energy_max):
+    beta = float(1/float(temp)) #Thermodynamic Beta = 1/kT
     
     energy_progression = [] #For each trial, we will record the total energy
 
@@ -51,7 +52,8 @@ def get_complete_plot(temp, num_particles, num_trials, energy_max):
     def alter_energy_of_particle(particle, energy_change):
         try:
             particle['E'] += int(energy_change)
-            particle['P'] = math.exp(-(1/temp) * float(particle['E']))
+            particle['P'] = math.exp(-(float(1)/float(temp))*float(
+                                particle['E']))
         except Exception as e:
             log('Failed to alter energy of particle:' + str(e))
 
@@ -125,8 +127,7 @@ def get_complete_plot(temp, num_particles, num_trials, energy_max):
         # r<exp(-b*DE);  where r is a randomly generated number 0<r<1:
         if dE > 0:
             random_num_r = random.random()
-            energy_condition_value = math.exp(-(beta) * 
-                dE)
+            energy_condition_value = math.exp(-(beta)*dE)
             if random_num_r > energy_condition_value:
                 particle_collection = particle_collection_unaltered
         elif dE == 0:
@@ -134,61 +135,116 @@ def get_complete_plot(temp, num_particles, num_trials, energy_max):
         total_macrostate_energy = get_total_energy(particle_collection)
         energy_progression.append(total_macrostate_energy)
 
-    #Count everything up.
-    count_collection = []
-    highest_energy = get_highest_energy(particle_collection)
-    for x in range(0, highest_energy):
-        count_collection.append(0)
+    energies_list = []
+    probabilities_list = []
+    partition_function = 0
     for particle in particle_collection:
-        try:
-            count_collection[int(particle['E'])-1] += 1 
-        except Exception as e:
-            log("Failed to count energy of " + str(particle['E']) 
-                + ": " + str(e))
-    count_collection.sort()
-    count_collection.reverse()
-    return range(0, highest_energy), count_collection
+        energies_list.append(particle['E'])
+        partition_function += particle['P']
+    for particle in particle_collection:
+        original_particle_P = particle['P']
+        particle['P'] = float(1)/float(partition_function)*original_particle_P
+        probabilities_list.append(particle['P'])
 
-def main(args_dict):
+    return energies_list, probabilities_list
+
+def gen_complete_distributions(num_particles, 
+                plots_temperatures, 
+                maximum_energy_all_plots, 
+                num_trials,
+                run_number):
+    complete_data_set = []
     fig = plt.figure(figsize=(8.5,11))
     plot_index = 0
-    plots_particles = [20,20,100,100,1000,1000,10000,10000,100000,100000]
-    plots_temperatures = [100,5500,100,5500,100,5500,100,5500,100,5500]
-    maximum_energy_all_plots = int(args_dict['energy_max'])
-    trials = int(args_dict['num_trials'])
-    fig.suptitle(r"$\mathrm{Trials}="+str(trials)+r"$", fontsize=18)
     for z in range(0,10):
         plot_index += 1
         plt.subplot(5, 2, plot_index)
-        plt.title(r"$n=" + str(plots_particles[z]) +
-                    r",\,T=" + str(plots_temperatures[z])+r"$", fontsize=12)
+        plt.title(r"$T=" + str(plots_temperatures[z])+r"$", fontsize=12)
         #Decorative purposes; only show y-axis label on left, x label on bottom
         if plot_index % 2 != 0:
-            plt.ylabel(r"$\mathrm{Count}$", fontsize=12)
+            plt.ylabel(r"$\mathrm{Probability}$", fontsize=12)
         if plot_index >= 9:
             plt.xlabel(r"$\mathrm{Energy}$", fontsize=12)
-        x_vals, y_vals = get_complete_plot(
+        x_vals, y_vals = gen_particle_dist(
                 plots_temperatures[z], 
-                plots_particles[z], 
-                trials, 
+                num_particles, 
+                num_trials, 
                 maximum_energy_all_plots)
-        plt.xticks([0,max(x_vals)])
-        plt.yticks([0,max(y_vals)])
-        plt.tick_params(axis='both', which='major', labelsize=6)
-        plt.grid(axis="y", alpha=0.25, linestyle="-")
-        plt.scatter(x_vals, y_vals, s=2, c="r")
-    plt.savefig("figure_out.png")
-    plt.savefig("figure_out.svg")
+        #plt.xticks([0,max(x_vals)])
+        #plt.yticks([0,max(0.11)])
+        plt.tick_params(axis='y', which='major', labelsize=5)
+        plt.tick_params(axis='y', which='minor', labelsize=5)
+        plt.tick_params(axis='x', which='major', labelsize=3)
+        plt.tick_params(axis='x', which='minor', labelsize=3)
+        plt.grid(axis="both", alpha=0.10, linestyle="-")
+        plt.scatter(x_vals, y_vals, s=5, c="r")
+        complete_data_set.append({
+            'E': x_vals, 
+            'P': y_vals, 
+            'T': plots_temperatures[z],
+            'N': num_particles,
+            'E_avg': 0})
+    fig.suptitle(r"$\mathrm{Trials}=" + str(num_trials) + r", n=" +
+                    str(num_particles) + r"\mathrm{\,Particles}$", fontsize=18)
+    plt.savefig("distribution_" + str(num_particles) + "_particles" + 
+                    str(run_number) + ".png")
+    plt.savefig("distribution_" + str(num_particles) + "_particles" + 
+                    str(run_number) + ".svg")
+    #Now compute the average energy <E> for each data set
+    E_averages = []
+    for data_set in complete_data_set:
+        #<E>=Sum(E_i * P_i)
+        avg_E = float(0)
+        for x in range(0, num_particles):
+            try:
+                avg_E += data_set['E'][x] * math.exp(-(1/float(data_set['T']) *
+                                                    data_set['E'][x]))
+            except Exception as e:
+                log('Failed to get avg E, x='+str(x)+',len(data_set[E])=' + 
+                        str(len(data_set['E']))+ ': ' + str(e))
+        data_set['E_avg'] = avg_E
+        E_averages.append(avg_E)
+    return complete_data_set, E_averages
+
+def main(args_dict):
+    num_particles = int(args_dict['num_particles'])
+    plots_temperatures = [10,50,100,500,1000,3000,6000,10000,15000,100000]
+    maximum_energy_all_plots = int(args_dict['energy_max'])
+    num_trials = int(args_dict['num_trials'])
+    runs = 5
+    average_energies = []
+    for xx in range(0, runs):
+        complete_data_set, E_averages = gen_complete_distributions(
+                                            num_particles, 
+                                            plots_temperatures, 
+                                            maximum_energy_all_plots, 
+                                            num_trials,
+                                            xx)
+        average_energies.append(E_averages)
+    fig = plt.figure(figsize=(8.5,11))
+    for average_energy_list in average_energies:
+        plt.semilogx(plots_temperatures, average_energy_list)
+    fig.suptitle(r"$\langle E\left(T\right)\rangle \mathrm{\,values:\,}n=" + 
+                    str(num_particles) + r"\mathrm{,\,Trials}=" + 
+                    str(num_trials) + "$", fontsize=18)
+    plt.ylabel(r"$\langle E\left( T\right) \rangle \mathrm{\, values}" + 
+                    r"$", fontsize=16)
+    plt.xlabel(r"$\mathrm{Temperature\,(K)}$", fontsize=16)
+    plt.tick_params(axis='both', which='major', labelsize=6)
+    plt.grid(axis="both", which='major', alpha=0.25, linestyle="-")
+    plt.grid(axis="x", which='minor', alpha=0.10, linestyle="-")
+    plt.savefig("e_averages_" + str(num_particles) + "_particles.svg")
+    plt.savefig("e_averages_" + str(num_particles) + "_particles.png")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Does the Metropolis algorithm and exports plots.')
-    parser.add_argument("-n", "--num-trials", default=100, 
+    parser.add_argument("-n", "--num-trials", default=1000, 
         help="Number of times to randomly alter energy")
-    parser.add_argument("-E", "--energy-max", default=100, 
+    parser.add_argument("-E", "--energy-max", default=1000, 
         help="Maximum energy value, with 1 being the lowest energy")
-    #parser.add_argument("-p", "--num-particles", default=1, 
-    #    help="Number of particles in the macrostate (system)")
+    parser.add_argument("-p", "--num-particles", default=100, 
+        help="Number of particles in the macrostate (system)")
     #parser.add_argument("-T", "--temperature", default=300, 
     #    help="Desired equilibrium temperature")
     args_dict = vars(parser.parse_args())
