@@ -1,15 +1,8 @@
 #
 #   Metropolis Algorithm Implementation
-#   Step 1: Initialize an dictionary list of N length, with each item 
-#              containing { P_i, E_i } - these are particles.
-#   Step 2: At random, attempt to change the energy of a particle by +/- 1 
-#              (random choice determines sign)
-#       - If the energy change is DE=-1, accept the change
-#       - If the energy change is DE=+1, accept the change only if:
-#           - r<exp(-b*DE);  where r is a randomly generated number 0<r<1
-#           - otherwise reject the change.
-#   Step 3: Compute the total energy
-#   Step 4: Repeat 2,3 many times
+#   1. Generate n particles with energy 1<E<E_Max
+#   2. For N trials, on each trial, change the energy of 1 randomly chosen particle by +1 or -1, also chosen randomly. Then, calculate the TOTAL energy of the system and compare it to the energy BEFORE the change was made. If the change is less than 0, proceed. If the energy change dE is greater than 0, proceed only if the value of some random number 0<r<1 is less than/equal to the value of exp(-beta*dE). Otherwise, scrap the change and continue to the next trial.
+#   3. Put the results in plottable, sorted form and plot them.
 #
 # Code Standards: https://www.python.org/dev/peps/pep-0008
 #
