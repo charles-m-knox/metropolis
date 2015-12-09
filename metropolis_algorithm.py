@@ -134,9 +134,7 @@ def get_complete_plot(temp, num_particles, num_trials, energy_max):
         total_macrostate_energy = get_total_energy(particle_collection)
         energy_progression.append(total_macrostate_energy)
 
-    #Now we plot things.
-    #First, count up all of the particles at each energy
-    #Then plot them
+    #Count everything up.
     count_collection = []
     highest_energy = get_highest_energy(particle_collection)
     for x in range(0, highest_energy):
