@@ -26,6 +26,30 @@ from time import strftime
 def log(message):
     print message
 
+def mult(a, b, scalar=1):
+    list_out = []
+    if len(a) != len(b):
+        print "got lists of different length"
+    else:
+        for i in range(0, len(a)):
+            list_out.append(scalar * (a[i]*b[i]))
+    return list_out
+
+def randi():
+    return random.randint(0,1)
+
+def rand():
+    return random.random()
+
+def get_p(beta, dE):
+    return math.exp(-1.0*beta*dE)
+
+def get_p_list(beta, e_vals):
+    p_list = []
+    for e_val in e_vals:
+        p_list.append(get_p(beta, e_val))
+    return p_list
+
 def gen_mcs_dist(temp, num_particles, num_trials):
     n_particles = num_particles
     n_trials = num_trials
@@ -40,36 +64,12 @@ def gen_mcs_dist(temp, num_particles, num_trials):
     e_list = []
     e_avg_list = []
 
-    def randi():
-        return random.randint(0,1)
-
-    def rand():
-        return random.random()
-
-    def get_p(dE):
-        return math.exp(-1.0*beta*dE)
-
-    def get_p_list(e_vals):
-        p_list = []
-        for e_val in e_vals:
-            p_list.append(get_p(e_val))
-        return p_list
-
-    def mult(a, b):
-        list_out = []
-        if len(a) != len(b):
-            print "got lists of different length"
-        else:
-            for i in range(0, len(a)):
-                list_out.append(a[i] * b[i])
-        return list_out
-
     trials = range(0, n_trials)
 
     for x in trials:
         if x is 0:
             e_i = e_0                               #Initialize
-        e_j = e_i + (1 if randi() is 1 else -1)     #Chagne by +/- 1
+        e_j = e_i + (1 if randi() is 1 else -1)     #Change by +/- 1
         if e_j < 0:
             e_j = e_i + (1 if randi() is 1 else -1) #Retry for negative 
                                                     #energies
@@ -78,16 +78,17 @@ def gen_mcs_dist(temp, num_particles, num_trials):
             if dE <= 0:                             
                 e_i = e_j                           #Accept if -1
             else:
-                w = get_p(dE)                       #Accept +1
-                if rand() <= w:                     # only if w
-                    e_i = e_j                       # is <= random
-                else:                               # between 0,1
-                    e_i = e_j*w                     #Otherwise accept +1*w (<1)
+                w = get_p(beta, dE)                       #Accept +1
+                if rand() <= w:                     # if w <= r
+                    e_i = e_j                       # 
+                else:                               #Otherwise, accept 
+                    e_i = e_j*w                     # value of (+1*w)
 
         e_list.append(e_i)
-        p_list = get_p_list(e_list)                 #calculate <E> for each
+        p_list = get_p_list(beta, e_list)           #calculate <E> for each
         Z = sum(p_list)                             # trial
-        e_avg = n_particles * sum(mult(e_list, p_list)) / Z
+        #e_avg = n_particles * sum(mult(e_list, p_list)) / Z
+        e_avg = sum(mult(e_list, p_list, n_particles)) / Z
         e_avg_list.append(e_avg)
     return e_avg_list
 
@@ -111,7 +112,7 @@ def gen_complete_distributions(num_particles,
 def main(args_dict):
     #--------------------------------------------------------------------------
     num_particles = int(args_dict['num_particles'])
-    plots_temperatures = [1,5,10,50,100,500,1000,5000,10000,100000]
+    plots_temperatures = [0.5,1,2,3,4,5,6,7,8,9]
     num_trials = int(args_dict['num_trials'])
     trials = range(0, num_trials)
     runs = int(args_dict['num_runs'])
@@ -158,27 +159,32 @@ def main(args_dict):
                     str(num_particles) + r"\mathrm{\,Particles,\,}" + 
                     str(runs) + r"\mathrm{\, Runs}$", fontsize=18)
     plt.savefig("mcs_" + str(num_particles) + "_particles_" + str(num_trials) + "_trials.png")
-    #plt.savefig("mcs_" + str(num_particles) + "_particles_run" + 
-    #                str(run_number) + ".svg")
+    plt.savefig("mcs_" + str(num_particles) + "_particles_" + str(num_trials) + "_trials.svg")
+    plt.savefig("mcs_" + str(num_particles) + "_particles_" + str(num_trials) + "_trials.pdf")
     #-----------------------------------------------------------Figure1 End
     #
     #-----------------------------------------------------------Figure2 Begin
     fig = plt.figure(figsize=(8.5,11))
     for average_energy_list in average_energies_lists:
         plt.loglog(plots_temperatures, average_energy_list)
-    analytical_energy_averages = []
+    analytical_energy_averages = []                  #Calculate Analytical <E>
     for temp in plots_temperatures:
-        exp_val = math.exp(-1.0/temp)
-        analytical_energy_value = exp_val / (1.0 - exp_val)
-        analytical_energy_averages.append(analytical_energy_value)
+        beta = 1.0 / temp
+        Z = 1.0 / (1.0 - get_p(beta, 1.0))
+        analytical_energy_value = 0.0
+        for n in range(0, num_particles):
+            analytical_energy_value += n * get_p(beta, n)
+        #exp_val = math.exp(-beta)
+        #analytical_energy_value = exp_val / (1.0 - exp_val)
+        analytical_energy_averages.append(num_particles * analytical_energy_value / Z)
     plt.loglog(plots_temperatures, analytical_energy_averages)
     #-----------------------------------------------------------Figure2 config
     fig.suptitle(r"$\langle E\left(T\right)\rangle \mathrm{\,values:\,}n=" + 
                     str(num_particles) + r"\mathrm{,\,Trials}=" + 
                     str(num_trials) + r"$", fontsize=18)
-    plt.ylabel(r"$\langle E\left( T\right) \rangle \mathrm{\, values}" + 
+    plt.ylabel(r"$\langle E\left( T\right) \rangle \mathrm{/h\nu }" + 
                     r"$", fontsize=16)
-    plt.xlabel(r"$\mathrm{Temperature\,(K)}$", fontsize=16)
+    plt.xlabel(r"$\mathrm{Temperature\,(K/h\nu )}$", fontsize=16)
     plt.tick_params(axis='both', which='major', labelsize=6)
     plt.grid(axis="both", which='major', alpha=0.25, linestyle="-")
     plt.grid(axis="both", which='minor', alpha=0.10, linestyle="-")
