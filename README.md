@@ -1,5 +1,13 @@
 # Metropolis Algorithm for Energy, Temperature of Particles
 
+## Usage
+
+I'm currently running:
+
+ python metropolis_algorithm.py -R 3 -n 20000 -p 20
+ 
+and we will see the output when it's done.
+
 ## Introduction
 
 Uses the metropolis algorithm (i.e. Monte Carlo) to simulate the progression of a system of n particles at various Temperature values.
