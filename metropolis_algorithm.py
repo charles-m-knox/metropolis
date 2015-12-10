@@ -21,6 +21,7 @@ import collections
 import numpy as np
 import math
 import random
+from time import strftime
 
 def log(message):
     print message
@@ -114,6 +115,7 @@ def main(args_dict):
     num_trials = int(args_dict['num_trials'])
     trials = range(0, num_trials)
     runs = int(args_dict['num_runs'])
+    log(strftime("%Y-%m-%d %H:%M:%S"))
     log('Doing ' + str(runs) + ' total simulations with ' + str(
             len(plots_temperatures)) + ' temperature variations per run')
     #--------------------------------------------------------------------------
@@ -182,6 +184,8 @@ def main(args_dict):
     plt.grid(axis="both", which='minor', alpha=0.10, linestyle="-")
     plt.savefig("e_averages_" + str(num_particles) + "_particles.svg")
     plt.savefig("e_averages_" + str(num_particles) + "_particles.png")
+    log("Finished")
+    log(strftime("%Y-%m-%d %H:%M:%S"))
     #-----------------------------------------------------------Figure2 config
 
 if __name__ == "__main__":
