@@ -40,12 +40,13 @@ def gen_mcs_dist(temp, num_particles, num_trials, energy_max):
 
     particle_collection = []
     for i in range(0, num_particles):
-        particle_collection.append(energy_max/10)
+        particle_collection.append(random.randint(1, energy_max))
 
     #Step 2, N times: Change energy of random particle, compute total 
     # energy of system, then accept or do not accept.
     steps = []
     energy_steps = []
+    num_rejects = 0
     for i in range(0, num_trials):
         particle_collection_unaltered = []
         for particle in particle_collection:
@@ -61,8 +62,9 @@ def gen_mcs_dist(temp, num_particles, num_trials, energy_max):
         dE = altered_macrostate_energy - initial_macrostate_energy
         if dE > 0:
             random_num_r = random.random()
-            energy_condition_value = math.exp(-(beta)*dE)
+            energy_condition_value = math.exp(-(beta) * dE)
             if random_num_r > energy_condition_value:
+                num_rejects += 1
                 particle_collection = particle_collection_unaltered
         total_macrostate_energy = sum(particle_collection)
         steps.append(i)
@@ -72,7 +74,6 @@ def gen_mcs_dist(temp, num_particles, num_trials, energy_max):
     partition_fct = float(0)
     #First get the partition function by adding all particles' exponential fcts
     for particle in particle_collection:
-        #print str(particle) + " " + str(beta) + " " + str(partition_fct)
         partition_fct += math.exp(-beta * particle)
     for particle in particle_collection:
         probabilities_list.append(1/partition_fct * math.exp(-beta * particle))
@@ -207,11 +208,11 @@ def main(args_dict):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Does the Metropolis algorithm and exports plots.')
-    parser.add_argument("-n", "--num-trials", default=1000, 
+    parser.add_argument("-n", "--num-trials", default=10000, 
         help="Number of times to randomly alter energy")
     parser.add_argument("-E", "--energy-max", default=1000, 
         help="Maximum energy value, with 1 being the lowest energy")
-    parser.add_argument("-p", "--num-particles", default=100, 
+    parser.add_argument("-p", "--num-particles", default=20, 
         help="Number of particles in the macrostate (system)")
     #parser.add_argument("-T", "--temperature", default=300, 
     #    help="Desired equilibrium temperature")
