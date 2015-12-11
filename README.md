@@ -4,9 +4,8 @@
 
 I'm currently running:
 
- python metropolis_algorithm.py -R 3 -n 20000 -p 20
- 
-and we will see the output when it's done.
+    python metropolis_algorithm.py -R 8 -n 2500 -p 20
+
 
 ## Introduction
 
@@ -20,8 +19,6 @@ It does this process 5 times and calculates the average energy, <E>, at each tem
 
 ## Output
 
-![20 particles, distribution] (https://raw.githubusercontent.com/chuck-knox/metropolis/master/distribution_20_particles0.png)
+![20 particles, progression] (https://raw.githubusercontent.com/chuck-knox/metropolis/master/mcs_20_particles_2500_trials.png)
 
 ![20 particles, <E>] (https://raw.githubusercontent.com/chuck-knox/metropolis/master/e_averages_20_particles.png)
-
-![500 particles, <E>] (https://raw.githubusercontent.com/chuck-knox/metropolis/master/e_averages_500_particles.png)
