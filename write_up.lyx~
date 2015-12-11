@@ -281,8 +281,7 @@ Results
 \end_layout
 
 \begin_layout Standard
-The results are as follows.
- Note that in some plots we have done 2500 iterations in the Monte Carlo
+Note that in these plots we have done 2500 iterations in the Monte Carlo
  simulation.
  The results of higher iterations do not seem to differ much at these temperatur
 es, so it is safe to assume that these results have allowed a sufficient
