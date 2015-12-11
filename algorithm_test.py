@@ -3,7 +3,7 @@ import math
 import random
 import matplotlib.pyplot as plt
 
-#Start with some random microstate E_0
+#Just the algorithm.
 
 n_particles = 20
 n_trials = 5000
@@ -70,4 +70,4 @@ for x in trials:
     e_avg_list.append(e_avg)
 
 plt.plot(trials, e_avg_list)
-plt.savefig('algorithm_test.png')
+#plt.savefig('algorithm_test.svg')
