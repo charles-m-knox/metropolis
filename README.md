@@ -21,9 +21,9 @@ It does this process R times and calculates the average energy, at each temperat
 
 ## Output
 
-![20 particles, progression] (https://raw.githubusercontent.com/chuck-knox/metropolis/master/mcs_20_particles_2500_trials.png)
+![200 particles] (https://raw.githubusercontent.com/chuck-knox/metropolis/master/output/png/mcs_200_particles_2500_trials.png)
 
-![20 particles, <E>] (https://raw.githubusercontent.com/chuck-knox/metropolis/master/e_averages_20_particles.png)
+![200 particles, <E>] (https://raw.githubusercontent.com/chuck-knox/metropolis/master/output/png/e_averages_200_particles.png)
 
 
 ## Ideas
