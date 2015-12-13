@@ -28,4 +28,4 @@ It does this process R times and calculates the average energy, at each temperat
 
 ## Ideas
 
-To make the process more streamlined, each run could be sent on its own thread. I'd do it if I had had more time before having to turn in this project.
+To make the process more streamlined, each run could be sent on its own thread. For 10000 monte carlo steps it can take up to 5 minutes per full run.
