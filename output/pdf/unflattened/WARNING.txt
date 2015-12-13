@@ -1,0 +1,3 @@
+Opening the unflattened PDFs will cause your PDF reader to freeze for quite some time or indefinitely. 
+
+Why? For the mcs_x_particles_y_trials.pdf files, there are (10*y*R + plots) layers/points to draw, where y=2500 and R=8 runs in these particular PDFs. So in total there are 200,000 things to draw, and the reader will take a while to render it.
