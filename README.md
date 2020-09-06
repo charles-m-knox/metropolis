@@ -4,8 +4,9 @@
 
 I'm currently running:
 
-    python metropolis_algorithm.py -R 8 -n 2500 -p 20
-
+```bash
+python metropolis_algorithm.py -R 8 -n 2500 -p 20
+```
 
 ## Introduction
 
@@ -21,9 +22,9 @@ It does this process R times and calculates the average energy, at each temperat
 
 ## Output
 
-![200 particles] (https://raw.githubusercontent.com/chuck-knox/metropolis/master/output/png/mcs_200_particles_2500_trials.png)
+![200 particles](https://gitlab.com/charles-m-knox/metropolis/-/raw/master/output/png/mcs_200_particles_2500_trials.png)
 
-![200 particles, <E>] (https://raw.githubusercontent.com/chuck-knox/metropolis/master/output/png/e_averages_200_particles.png)
+![200 particles, <E>](https://gitlab.com/charles-m-knox/metropolis/-/raw/master/output/png/e_averages_200_particles.png)
 
 
 ## Ideas
